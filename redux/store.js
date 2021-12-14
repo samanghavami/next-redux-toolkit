@@ -1,7 +1,6 @@
 import counterReducer from "../features/counter/counterSlice";
-import { configureStore, createSlice, ThunkAction } from "@reduxjs/toolkit";
-import { Action } from "redux";
-import { createWrapper, HYDRATE } from "next-redux-wrapper";
+import { configureStore } from "@reduxjs/toolkit";
+import { createWrapper } from "next-redux-wrapper";
 
 export function makeStore() {
   return configureStore({
