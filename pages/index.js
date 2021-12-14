@@ -15,6 +15,8 @@ import { useSelector, useDispatch } from "react-redux";
 function Counter() {
   const dispatch = useDispatch();
   const count = useSelector(selectCount);
+  const posts = useSelector((state) => state.counter.posts);
+
   const [incrementAmount, setIncrementAmount] = useState("1");
 
   const incrementValue = Number(incrementAmount) || 0;
@@ -64,6 +66,14 @@ function Counter() {
         >
           Add If Odd
         </button>
+      </div>
+
+      <div>
+        <ul>
+          {posts.map((post) => (
+            <li key={post.id}>{post.title}</li>
+          ))}
+        </ul>
       </div>
     </div>
   );
