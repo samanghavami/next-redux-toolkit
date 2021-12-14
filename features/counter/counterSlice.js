@@ -1,31 +1,40 @@
-import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
-
-import { createWrapper, HYDRATE } from "next-redux-wrapper";
+import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import axios from "axios";
+import { HYDRATE } from "next-redux-wrapper";
 import { fetchCount } from "./counterAPI";
 
 const initialState = {
   value: 0,
   status: "idle",
+  posts: [],
 };
 
-// The function below is called a thunk and allows us to perform async logic. It
-// can be dispatched like a regular action: `dispatch(incrementAsync(10))`. This
-// will call the thunk with the `dispatch` function as the first argument. Async
-// code can then be executed and other actions can be dispatched. Thunks are
-// typically used to make async requests.
+export const getPostsAsync = createAsyncThunk("counter/getPosts", async () => {
+  let posts = await axios(
+    "https://jsonplaceholder.typicode.com/posts?_start=0&_limit=5"
+  );
+  let main = posts.data;
+  return main;
+});
+
 export const incrementAsync = createAsyncThunk(
   "counter/fetchCount",
   async (amount) => {
     const response = await fetchCount(amount);
-    // The value we return becomes the `fulfilled` action payload
     return response.data;
   }
 );
 
+export const incrementIfOdd = (amount) => (dispatch, getState) => {
+  const currentValue = selectCount(getState());
+  if (currentValue % 2 === 1) {
+    dispatch(incrementByAmount(amount));
+  }
+};
+
 export const counterSlice = createSlice({
   name: "counter",
   initialState,
-  // The `reducers` field lets us define reducers and generate associated actions
   reducers: {
     increment: (state) => {
       state.value += 1;
@@ -39,35 +48,31 @@ export const counterSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
+      .addCase(HYDRATE, (state, action) => {
+        console.log("HYDRATE", action.payload.counter);
+
+        return {
+          ...state,
+          ...action.payload.counter,
+        };
+      })
       .addCase(incrementAsync.pending, (state) => {
         state.status = "loading";
       })
       .addCase(incrementAsync.fulfilled, (state, action) => {
         state.status = "idle";
         state.value += action.payload;
+      })
+      .addCase(getPostsAsync.fulfilled, (state, action) => {
+        console.log(action.payload);
+        state.status = "idle";
+        state.posts = action.payload;
       });
-  },
-  extraReducers: {
-    [HYDRATE]: (state, action) => {
-      console.log("state:", state);
-      console.log("action:", action);
-      return {
-        ...state,
-        ...action.payload.counter,
-      };
-    },
   },
 });
 
 export const { increment, decrement, incrementByAmount } = counterSlice.actions;
 
 export const selectCount = (state) => state.counter.value;
-
-export const incrementIfOdd = (amount) => (dispatch, getState) => {
-  const currentValue = selectCount(getState());
-  if (currentValue % 2 === 1) {
-    dispatch(incrementByAmount(amount));
-  }
-};
 
 export default counterSlice.reducer;

@@ -6,6 +6,7 @@ import {
   incrementAsync,
   incrementIfOdd,
   selectCount,
+  getPostsAsync,
 } from "../features/counter/counterSlice";
 import styles from "../features/counter/Counter.module.css";
 import { wrapper } from "../redux/store";
@@ -72,6 +73,7 @@ export const getServerSideProps = wrapper.getServerSideProps(
   (store) =>
     async ({ req, res }) => {
       await store.dispatch(incrementByAmount(12));
+      await store.dispatch(getPostsAsync(req));
     }
 );
 
